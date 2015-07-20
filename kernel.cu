@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-//#include <sys/time.h>
+#include <sys/time.h>
 using namespace std;
 
 // C++ dependencies
@@ -40,8 +40,8 @@ int P;		// Global number of processors
 bool check_cuda_status = false; // turn to false when running on circe
 
 /* These are for tracking time */
-//struct timezone myTimezone;	
-//struct timeval startTime, endTime;
+struct timezone myTimezone;	
+struct timeval startTime, endTime;
 
 // HOST FUNCTION HEADERS---------------------------------
 
@@ -304,14 +304,14 @@ int main(int argc, char **argv)
 	printf("Find primes up to: %llu\n\n", N);
 	
 	/* start counting time */
-	//gettimeofday(&startTime, &myTimezone);
+	gettimeofday(&startTime, &myTimezone);
 
 	EratosthenesSieveNaive(N);
 
 	//cudaError_t x = algorithm4_1(N);
 
 	/* check the total running time */ 
-	//report_running_time("Algorithm 4.1");
+	report_running_time("Algorithm 4.1 CPU");
 
 	/*if (check_cuda_status)
 	{
@@ -322,8 +322,8 @@ int main(int argc, char **argv)
 	}*/
 
 	// Display the primes.
-	//for (int i = 0; i < N; i++)
-	//	if (S[i]) printf("%llu ", i);
+	for (int i = 0; i < N; i++)
+		if (S[i]) printf("%llu ", i);
 
 	printf("Found stuff\n");
 
@@ -618,15 +618,15 @@ cudaError_t cleanup(bool *d_S, Wheel_k &wheel, cudaError_t cudaStatus)
 /* 
 	set a checkpoint and show the (natural) running time in seconds 
 */
-//double report_running_time(const char *arr) {
-//	long sec_diff, usec_diff;
-//	gettimeofday(&endTime, &myTimezone);
-//	sec_diff = endTime.tv_sec - startTime.tv_sec;
-//	usec_diff= endTime.tv_usec-startTime.tv_usec;
-//	if(usec_diff < 0) {
-//		sec_diff --;
-//		usec_diff += 1000000;
-//	}
-//	printf("Running time for %s: %ld.%06ld sec\n\n", arr, sec_diff, usec_diff);
-//	return (double)(sec_diff*1.0 + usec_diff/1000000.0);
-//}
+double report_running_time(const char *arr) {
+	long sec_diff, usec_diff;
+	gettimeofday(&endTime, &myTimezone);
+	sec_diff = endTime.tv_sec - startTime.tv_sec;
+	usec_diff= endTime.tv_usec-startTime.tv_usec;
+	if(usec_diff < 0) {
+		sec_diff --;
+		usec_diff += 1000000;
+	}
+	printf("Running time for %s: %ld.%06ld sec\n\n", arr, sec_diff, usec_diff);
+	return (double)(sec_diff*1.0 + usec_diff/1000000.0);
+}
