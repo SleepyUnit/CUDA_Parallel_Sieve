@@ -43,7 +43,7 @@ struct timeval startTime, endTime;
 	Used to help find the first k primes.
 	Returns the k-th prime.
 */
-big EratosthenesSieve(long double x);
+void EratosthenesSieve(big n);
 
 /*	Algorithm 4.1 Sequential Portion
 	Running Time: O(sqrt(n))
@@ -181,7 +181,7 @@ int main(int argc, char **argv)
 
 // HOST FUNCTION DEFINITIONS-----------------------------
 
-void EratosthenesSieve(long double k, big n)
+void EratosthenesSieve(big n)
 {
 	big kthPrime = 0;
 
@@ -209,7 +209,7 @@ cudaError_t algorithm4_1(big n)
 	big sqrt_N = (big)sqrtl((long double)n);
 
 	/* Find the first k primes up to sqrt(N) */
-	big k = EratosthenesSieve(n);
+	EratosthenesSieve(n);
 
 	/* Delta = ceil(n/p) */
 	range = (big)ceill(n / (long double)P);
