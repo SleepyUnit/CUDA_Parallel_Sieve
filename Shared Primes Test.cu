@@ -183,8 +183,6 @@ int main(int argc, char **argv)
 
 void EratosthenesSieve(big n)
 {
-	big kthPrime = 0;
-
 	// 0 and 1 are non-primes.
 	S[0] = S[1] = false;
 	for (big i = 2; i < n; i++)
@@ -277,7 +275,6 @@ cudaError_t parallelSieve(big n, big range)
 	dim3 gridSize(1, 1, 1);
 	dim3 blockSize(P, 1, 1);
 
-	//parallelSieveKernel<<<gridSize, blockSize>>>(n, k, m, wheel, range, d_S);
 	parallelSieveKernel<<<gridSize, blockSize>>>(n, range, d_S);
 
 	cudaStatus = cudaGetLastError();
