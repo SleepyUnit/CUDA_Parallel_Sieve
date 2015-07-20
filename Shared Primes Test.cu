@@ -272,11 +272,10 @@ cudaError_t parallelSieve(big n, big range)
 	}
 
 	// Kernel Call
-	//dim3 gridSize(ceill(1, 1, 1);
-	//dim3 blockSize(P, 1, 1);
+	dim3 gridSize(1, 1, 1);
+	dim3 blockSize(P, 1, 1);
 
-	//parallelSieveKernel<<<gridSize, blockSize>>>(n, k, m, wheel, range, d_S);
-	parallelSieveKernel<<<1, P>>>(n, range, d_S);
+	parallelSieveKernel<<<gridSize, blockSize>>>(n, range, d_S);
 
 	cudaStatus = cudaGetLastError();
 	if (check_cuda_status)
