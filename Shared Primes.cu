@@ -27,7 +27,7 @@ typedef unsigned long long big;
 
 // GLOBAL VARIABLES--------------------------------------
 bool * S;	// Global shared bit array of numbers up to N
-int P = 256;		// Global number of processors
+int P = 1024;		// maximum warp occupancy
 
 bool check_cuda_status = false; // turn to false when running on circe
 
@@ -183,8 +183,6 @@ int main(int argc, char **argv)
 
 void EratosthenesSieve(big n)
 {
-	big kthPrime = 0;
-
 	// 0 and 1 are non-primes.
 	S[0] = S[1] = false;
 	for (big i = 2; i < n; i++)
@@ -212,7 +210,7 @@ cudaError_t algorithm4_1(big n)
 	EratosthenesSieve(n);
 
 	/* Delta = ceil(n/p) */
-	range = (big)ceill(n / 4);
+	range = n/(4*256);
 
 	/* PARALLEL PART */
 	cudaError_t parallelStatus = parallelSieve(n, range);
@@ -277,7 +275,6 @@ cudaError_t parallelSieve(big n, big range)
 	dim3 gridSize(4, 1, 1);
 	dim3 blockSize(256, 1, 1);
 
-	//parallelSieveKernel<<<gridSize, blockSize>>>(n, k, m, wheel, range, d_S);
 	parallelSieveKernel<<<gridSize, blockSize>>>(n, range, d_S);
 
 	cudaStatus = cudaGetLastError();
