@@ -34,7 +34,11 @@ typedef struct Wheel_t	// Struct-of-Arrays Wheel
 } Wheel_k;
 
 bool * S;	// Global shared bit array of numbers up to N
-int P;		// Global number of processors
+int P = 4;		// Global number of blocks / segments
+int threadCapacity = 1024;
+
+dim3 gridSize(P, 1, 1);
+dim3 blockSize(threadCapacity/P, 1, 1);		// 256 threads * 4 blocks
 
 bool check_cuda_status = false; // turn to false when running on circe
 
@@ -362,7 +366,7 @@ cudaError_t algorithm4_1(big n)
 	}
 
 	/* Delta = ceil(n/p) */
-	range = (big)ceill(n / (long double)P);
+	range = (big)ceill(n / 1024);
 
 	/* PARALLEL PART */
 	cudaError_t parallelStatus = parallelSieve(n, k, m, wheel, range);
@@ -472,8 +476,6 @@ cudaError_t parallelSieve(
 	}
 
 	// Kernel Call
-	dim3 gridSize(ceill(ceill(sqrt(n))/256), 1, 1);
-	dim3 blockSize(256, 1, 1);
 
 	parallelSieveKernel<<<gridSize, blockSize>>>(n, k, m, wheel, range, d_S);
 

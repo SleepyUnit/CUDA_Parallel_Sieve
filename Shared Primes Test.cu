@@ -210,7 +210,7 @@ cudaError_t algorithm4_1(big n)
 	EratosthenesSieve(n);
 
 	/* Delta = ceil(n/p) */
-	range = (big)ceill(n / (long double)P);
+	range = n/(4*256);
 
 	/* PARALLEL PART */
 	cudaError_t parallelStatus = parallelSieve(n, range);
@@ -272,8 +272,8 @@ cudaError_t parallelSieve(big n, big range)
 	}
 
 	// Kernel Call
-	dim3 gridSize(1, 1, 1);
-	dim3 blockSize(P, 1, 1);
+	dim3 gridSize(4, 1, 1);
+	dim3 blockSize(256, 1, 1);
 
 	parallelSieveKernel<<<gridSize, blockSize>>>(n, range, d_S);
 

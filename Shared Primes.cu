@@ -27,7 +27,7 @@ typedef unsigned long long big;
 
 // GLOBAL VARIABLES--------------------------------------
 bool * S;	// Global shared bit array of numbers up to N
-int P;		// Global number of processors
+int P = 256;		// Global number of processors
 
 bool check_cuda_status = false; // turn to false when running on circe
 
@@ -212,7 +212,7 @@ cudaError_t algorithm4_1(big n)
 	EratosthenesSieve(n);
 
 	/* Delta = ceil(n/p) */
-	range = (big)ceill(n / (long double)P);
+	range = (big)ceill(n / 4);
 
 	/* PARALLEL PART */
 	cudaError_t parallelStatus = parallelSieve(n, range);
@@ -274,7 +274,7 @@ cudaError_t parallelSieve(big n, big range)
 	}
 
 	// Kernel Call
-	dim3 gridSize(ceill(ceill(sqrt(n))/256), 1, 1);
+	dim3 gridSize(4, 1, 1);
 	dim3 blockSize(256, 1, 1);
 
 	//parallelSieveKernel<<<gridSize, blockSize>>>(n, k, m, wheel, range, d_S);
