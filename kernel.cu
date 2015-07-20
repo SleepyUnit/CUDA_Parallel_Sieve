@@ -43,7 +43,7 @@ struct timeval startTime, endTime;
 	Used to help find the first k primes.
 	Returns the k-th prime.
 */
-big EratosthenesSieve(long double x);
+void EratosthenesSieve(big n);
 
 /*	Algorithm 4.1 Sequential Portion
 	Running Time: O(sqrt(n))
@@ -102,32 +102,36 @@ __global__ void parallelSieveKernel(
 	big n, big range, bool *d_S)
 {
 	// Shared memory use for S in range of thread
-	int j;
-	big f;
 	__shared__ bool primes[48000];
-
-	// Generate required values
-	big sqrt_N = sqrt_d(n);
-
-	// Thread id
-	big i = threadIdx.x + blockIdx.x * blockDim.x;
-
-	// Find left and right range
-	big L = range * i + sqrt_N;
-	big R = range + L;
 
 	if (threadIdx.x == 0)
 	{
 		for (int i=0; i<=48000; i++)
 			primes[i] = d_S[i];
 	}
+
+	// Sync after initializing
 	__syncthreads();
+
+	// Variables
+	int j;
+	big f;
+
+	// Thread id
+	big id = threadIdx.x + blockIdx.x * blockDim.x;
+
+	// Generate required values
+	big sqrt_N = sqrt_d(n);
+
+	// Find left and right range
+	big L = range * id + sqrt_N;
+	big R = range + L;
 
 	// Sieve
 	for (j = 0; j < sqrt_N; j++)
 	{
 		// For each prime number
-		if (j<=48000 && primes[j] || d_S[j])
+		if (primes[j])
 		{
 			// Calculate smallest f
 			f = L / j;
@@ -151,6 +155,12 @@ int main(int argc, char **argv)
 {
 	big N = (big)strtoull(argv[1], NULL, 10);
 	S = new bool[N]; //(bool*)malloc(N * sizeof(bool));
+
+	if (sqrtl(N) > 48000)
+	{
+		printf("Argument is too large, maximum argument is 2,304,000,000\n");
+		return 0;
+	}
 
 	printf("Find primes up to: %llu\n\n", N);
 	
@@ -181,16 +191,14 @@ int main(int argc, char **argv)
 
 // HOST FUNCTION DEFINITIONS-----------------------------
 
-void EratosthenesSieve(long double k, big n)
+void EratosthenesSieve(big n)
 {
-	big kthPrime = 0;
-
 	// 0 and 1 are non-primes.
 	S[0] = S[1] = false;
 	for (big i = 2; i < n; i++)
 		S[i] = true;
 
-	// Simple Sieving Operation.
+	// Simple Sieving Operation up to square root of n
 	for (big i = 2; i < (big)sqrtl(n); i++)
 		if (S[i])
 		{
@@ -209,7 +217,7 @@ cudaError_t algorithm4_1(big n)
 	big sqrt_N = (big)sqrtl((long double)n);
 
 	/* Find the first k primes up to sqrt(N) */
-	big k = EratosthenesSieve(n);
+	EratosthenesSieve(n);
 
 	/* Delta = ceil(n/p) */
 	range = (big)ceill(n / (long double)P);
