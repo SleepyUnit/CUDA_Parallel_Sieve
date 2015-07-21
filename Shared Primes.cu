@@ -41,7 +41,6 @@ struct timeval startTime, endTime;
 	HELPER: for Algorithm 4.1 Sequential Portion
 	The most basic form of generating primes.
 	Used to help find the first k primes.
-	Returns the k-th prime.
 */
 void EratosthenesSieve(big n);
 
@@ -231,11 +230,7 @@ cudaError_t parallelSieve(big n, big range)
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
 
-	/* The Number Field S
-	   will be migrated to GLOBAL memory
-	   OPTIMIZATION: ranges will be migrated to SHARED memory
-	   OPTIMIZATION: [0, sqrt(n)] will be migrated to CONSTANT memory
-	*/
+	/* The Number Field S */
 	bool * d_S = NULL;
 
 	// Choose which GPU to run on, change this on a multi-GPU system.
