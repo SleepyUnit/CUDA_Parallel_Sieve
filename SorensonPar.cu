@@ -100,32 +100,6 @@ __device__ big gcd_d(big a, big b)
    return a;
 }
 
-/*	gcd_d
-	Device version of the Binary Method
-	with bit arithmetic
-	*/
-/*
-__device__ big gcd_d(big u, big v)
-{
-	big g = 1;
-
-	while ((u % 2 == 0) && (v % 2 == 0))
-	{
-		g <<= 1;
-		u >>= 1;
-		v >>= 1;
-	}
-
-	while (u != 0 && v != 0)
-		if (u % 2 == 0) u >>= 1;
-		else if (v % 2 == 0) v >>= 1;
-		else if (u > v) u = (u - v) >> 1;
-		else v = (v - u) >> 1;
-
-	return (g * (u + v));
-}
-*/
-
 /*	sqrt_d
 	Device version of the Square Root Function
 	Babylonian Method
@@ -206,27 +180,6 @@ __global__ void parallelSieveKernel(
 	
 }
 
-/*	TODO: Algorithm 4.1: Parallel Sieve Kernel version 2
-	Remarks: Prime table S within [0, sqrt(n)] migrated to const memory
-			 Wheel completely migrated to const memory
-	Beware that const memory is only 64kB.
-	Benchmark with the Profiler first before creating this!
-*/
-__global__ void parallelSieveKernel2(
-	big n, big k, big m, Wheel_k d_wheel, big range, bool *d_S);
-
-/*	TODO: Algorithm 4.1: Parallel Sieve Kernel version 3
-	Remarks: Prime table S within [0, sqrt(n)] migrated to const memory
-			 Wheel completely migrated to const memory
-			 Probable use of the shared memory
-			 Probable use of registers
-	Beware that register is only 4B or 32b.
-	Beware that const memory is only 64kB.
-	Benchmark with the Profiler first before creating this!
-*/
-__global__ void parallelSieveKernel3(
-	big n, big k, big m, Wheel_k d_wheel, big range, bool *d_S);
-
 /*	MAIN
 	To run this add the ff. args:
 	1. N = the number up to which you're sieving
@@ -279,29 +232,6 @@ __host__ big gcd(big u, big v)
 	return u;
 }
 
-// Binary Method
-/*
-__host__ big gcd(big u, big v)
-{
-	big g = 1;
-
-	while ((u % 2 == 0) && (v % 2 == 0))
-	{
-		g <<= 1;
-		u >>= 1;
-		v >>= 1;
-	}
-
-	while (u != 0 && v != 0)
-		if (u % 2 == 0) u >>= 1;
-		else if (v % 2 == 0) v >>= 1;
-		else if (u > v) u = (u - v) >> 1;
-		else v = (v - u) >> 1;
-
-	return (g * (u + v));
-}
-*/
-
 big EratosthenesSieve(long double k, big n)
 {
 	big kthPrime = 0;
@@ -348,8 +278,7 @@ cudaError_t algorithm4_1(big n)
 	for (big ii = 0; ii < k; ii++)
 		if (S[ii]) m *= ii;
 
-	/* Compute k-th wheel W_k
-	   FUTURE OPTIMIZATION: Delegate kernel for computation */
+	/* Compute k-th wheel W_k */
 	for (big x = 0; x < n; x++)
 	{
 		// True if rp[x] is relatively prime to m
@@ -392,16 +321,10 @@ cudaError_t parallelSieve(
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
 
-	/* The Number Field S
-	   will be migrated to GLOBAL memory
-	   OPTIMIZATION: ranges will be migrated to SHARED memory
-	   OPTIMIZATION: [0, sqrt(n)] will be migrated to CONSTANT memory
-	*/
+	/* The Number Field S */
 	bool * d_S = NULL;
 
 	// The Wheel Precomputed Table
-	// will be migrated to GLOBAL memory
-	// OPTIMIZATION: may be migrated to CONSTANT memory as well
 	Wheel_k d_wheel;
 	d_wheel.rp = NULL;
 	d_wheel.dist = NULL;
@@ -476,7 +399,6 @@ cudaError_t parallelSieve(
 	}
 
 	// Kernel Call
-
 	parallelSieveKernel<<<gridSize, blockSize>>>(n, k, m, wheel, range, d_S);
 
 	cudaStatus = cudaGetLastError();
