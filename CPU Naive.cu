@@ -1,5 +1,5 @@
-/* SorensonPar.cu
-   Parallel Implementation of Algorithm 4.1
+/* CPU Naive.cu
+   CPU Single Thread Implementation of Algorithm 4.1
    as discussed in Sorenson and Parberry's
    1994 paper "Two Fast Parallel Prime Number
    Sieves".

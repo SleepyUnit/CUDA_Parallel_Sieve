@@ -1,4 +1,4 @@
-/* SorensonPar.cu
+/* Simple Kernel.cu
    Parallel Implementation of Algorithm 4.1
    as discussed in Sorenson and Parberry's
    1994 paper "Two Fast Parallel Prime Number
@@ -49,7 +49,6 @@ struct timeval startTime, endTime;
 	HELPER: for Algorithm 4.1 Sequential Portion
 	The most basic form of generating primes.
 	Used to help find the first k primes.
-	Returns the k-th prime.
 */
 void EratosthenesSieve(big n);
 
@@ -170,7 +169,6 @@ int main(int argc, char **argv)
 
 void EratosthenesSieve(big n)
 {
-
 	// 0 and 1 are non-primes.
 	S[0] = S[1] = false;
 	for (big i = 2; i < n; i++)

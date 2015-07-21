@@ -1,4 +1,4 @@
-/* SorensonPar.cu
+/* Shared Primes.cu
    Parallel Implementation of Algorithm 4.1
    as discussed in Sorenson and Parberry's
    1994 paper "Two Fast Parallel Prime Number
