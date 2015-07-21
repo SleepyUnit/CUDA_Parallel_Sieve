@@ -226,9 +226,6 @@ cudaError_t algorithm4_1(big n)
 cudaError_t parallelSieve(big n, big range)
 {
 	cudaError_t cudaStatus;
-	cudaEvent_t start, stop;
-	cudaEventCreate(&start);
-	cudaEventCreate(&stop);
 
 	/* The Number Field S */
 	bool * d_S = NULL;
@@ -242,9 +239,6 @@ cudaError_t parallelSieve(big n, big range)
 			return cudaStatus;
 		}
 	}
-
-	// Measure start time for CUDA portion
-	cudaEventRecord(start, 0);
 
 	// CUDA Memory Allocations.
 	cudaStatus = cudaMalloc((void**)&d_S, n * sizeof(bool));
@@ -299,13 +293,6 @@ cudaError_t parallelSieve(big n, big range)
 			return cleanup(d_S, cudaStatus);
 		}
 	}
-
-	// Measure stop time for CUDA portion
-	cudaEventRecord(stop, 0);
-	cudaEventSynchronize(stop);
-	float elapsedTime;
-	cudaEventElapsedTime(&elapsedTime, start, stop);
-	printf("Time to generate: %0.5f ms\n", elapsedTime);
 
 	// cudaFree
 	return cleanup(d_S, cudaStatus);
