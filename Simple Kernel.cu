@@ -91,16 +91,6 @@ __device__ big sqrt_d(big a)
 	return root;
 }
 
-__device__ big min_d(big a, big b)
-{
-	return (a < b) ? a : b;
-}
-
-__device__ big max_d(big a, big b)
-{
-	return (a > b) ? a : b;
-}
-
 __device__ void markComposites(big p, big n, bool *d_S)
 {
 	big c = 2;
@@ -225,15 +215,8 @@ cudaError_t algorithm4_1(big n)
 cudaError_t parallelSieve(big n, big range)
 {
 	cudaError_t cudaStatus;
-	cudaEvent_t start, stop;
-	cudaEventCreate(&start);
-	cudaEventCreate(&stop);
 
-	/* The Number Field S
-		will be migrated to GLOBAL memory
-		OPTIMIZATION: ranges will be migrated to SHARED memory
-		OPTIMIZATION: [0, sqrt(n)] will be migrated to CONSTANT memory
-	*/
+	/* The Number Field S */
 	bool * d_S = NULL;
 
 	// Choose which GPU to run on, change this on a multi-GPU system.
@@ -246,9 +229,6 @@ cudaError_t parallelSieve(big n, big range)
 		}
 	}
 
-	// Measure start time for CUDA portion
-	cudaEventRecord(start, 0);
-
 	// CUDA Memory Allocations.
 	cudaStatus = cudaMalloc((void**)&d_S, (n - CONST_MEM_SIZE) * sizeof(bool));
 	if (check_cuda_status)
@@ -260,7 +240,6 @@ cudaError_t parallelSieve(big n, big range)
 	}
 
 	// cudaMemCpy -> Device
-	// Pointer Arithmetic Copy: Hope it works!
 	cudaStatus = cudaMemcpy(d_S, S + CONST_MEM_SIZE, (n - CONST_MEM_SIZE) * sizeof(bool), cudaMemcpyHostToDevice);
 	if (check_cuda_status)
 	{
@@ -284,7 +263,6 @@ cudaError_t parallelSieve(big n, big range)
 	dim3 gridSize(ceill(ceill(sqrt(n))/256), 1, 1);
 	dim3 blockSize(256, 1, 1);
 
-	//parallelSieveKernel<<<gridSize, blockSize>>>(n, k, m, wheel, range, d_S);
 	parallelSieveKernel<<<gridSize, blockSize>>>(n, range, d_S);
 
 	cudaStatus = cudaGetLastError();
@@ -315,13 +293,6 @@ cudaError_t parallelSieve(big n, big range)
 			return cleanup(d_S, cudaStatus);
 		}
 	}
-
-	// Measure stop time for CUDA portion
-	cudaEventRecord(stop, 0);
-	cudaEventSynchronize(stop);
-	float elapsedTime;
-	cudaEventElapsedTime(&elapsedTime, start, stop);
-	printf("Time to generate: %0.5f ms\n", elapsedTime);
 
 	// cudaFree
 	return cleanup(d_S, cudaStatus);
